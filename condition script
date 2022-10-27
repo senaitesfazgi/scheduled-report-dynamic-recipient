@@ -1,0 +1,43 @@
+ 
+var replaceUserWithDynamic = false;
+var readyToSend = true;
+
+//Get report GR
+var reportDef = current.report.getRefRecord();
+var report = new GlideRecord(reportDef.table);
+report.addEncodedQuery(reportDef.filter);
+report.query();
+
+var assignedArray = [];
+//Loop thru, get array of assigned to sys_id
+while (report.next()) {
+
+    assignedArray.push(report.getValue('assigned_to'));
+}
+
+
+
+//Make array unique
+var au = new ArrayUtil();
+var assignedUnique = au.unique(assignedArray);
+
+//gs.info('Assigned to' + assignedUnique.length;
+
+if (assignedUnique.length > 0) {
+    //Update scheduled report's user list
+    if (replaceUserWithDynamic) {
+
+        current.user_list = assignedUnique.join(',');
+		
+    } else {
+
+        current.user_list += ',' + assignedUnique.join(',');
+    }
+	gs.info('User List ' + current.user_list);
+	reportDef.update();
+}else{
+	readyToSend = false;
+}
+//Make ready for sending
+
+answer = readyToSend;
